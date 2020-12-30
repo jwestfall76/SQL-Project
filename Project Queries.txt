@@ -1,0 +1,77 @@
+/* This is Question 2 from Question Set 1 corresponding with first slide */
+
+SELECT film_title, category_name, rental_duration,
+	NTILE(4) OVER (ORDER BY rental_duration) AS standard_quartile
+FROM (
+	SELECT f.title film_title, c.name category_name, f.rental_duration rental_duration
+	FROM film_category fc
+	JOIN category c
+	ON fc.category_id = c.category_id
+	JOIN film f
+	ON fc.film_id = f.film_id
+	WHERE c.name = 'Animation' OR c.name = 'Children' OR
+		c.name = 'Classics' OR c.name = 'Comedy' OR
+		c.name = 'Family' OR c.name = 'Music'
+) sub
+
+*/ This is Question 3 from Question Set 1 corresponding with second slide */
+
+WITH t1 AS (
+SELECT f.title film_title, c.name category_name, f.rental_duration rental_duration,
+	NTILE(4) OVER (ORDER BY rental_duration) AS standard_quartile
+FROM film_category fc
+JOIN category c
+ON fc.category_id = c.category_id
+JOIN film f
+ON fc.film_id = f.film_id
+WHERE c.name = 'Animation' OR c.name = 'Children' OR
+	c.name = 'Classics' OR c.name = 'Comedy' OR
+	c.name = 'Family' OR c.name = 'Music'
+)
+
+SELECT category_name,
+	standard_quartile, COUNT(rental_duration)
+FROM t1
+GROUP BY 1,2
+ORDER BY 1,2
+
+
+*/ This is Question 1 from Question Set 2 corresponding with third slide */
+
+SELECT DATE_PART('month',r.rental_date) AS rental_month, 
+	DATE_PART('year',r.rental_date) AS rental_year,
+	s.store_id,
+	COUNT(r.rental_id) AS count_rentals
+FROM rental r
+JOIN staff sta
+ON sta.staff_id = r.staff_id
+JOIN store s
+ON sta.store_id = s.store_id
+GROUP BY 1,2,3
+ORDER BY 4 DESC
+
+*/ This is Question 2 from Question Set 2 corresponding with fourth slide */
+
+WITH t1 AS (
+	SELECT  c.customer_id AS customer_id,
+		CONCAT (c.first_name, ' ', c.last_name) AS full_name,
+		SUM(p.amount) AS pay_amount
+	FROM customer c
+	JOIN payment p
+	ON c.customer_id = p.customer_id
+	GROUP BY 1,2
+	ORDER BY 3 DESC
+	LIMIT 10)
+
+SELECT DATE_TRUNC('month', p.payment_date) AS pay_mon, 
+	t1.full_name, 
+	COUNT(p.customer_id) AS pay_countpermon, 
+	SUM(p.amount) AS pay_amount
+FROM t1
+JOIN customer c
+ON c.customer_id = t1.customer_id
+JOIN payment p
+ON p.customer_id = c.customer_id
+GROUP BY 1,2
+ORDER BY 2,1
+
